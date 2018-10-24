@@ -1,11 +1,11 @@
-var AWS = require("aws-sdk");
+var AWS = require("aws-sdk")
 
 AWS.config.update({
   region: "eu-central-1",
-});
+})
 
-const client = new AWS.DynamoDB.DocumentClient();
-const uuid = require('uuid/v4');
+const client = new AWS.DynamoDB.DocumentClient()
+const uuid = require('uuid/v4')
 
 /**
  *
@@ -46,7 +46,7 @@ exports.createUser = async (event, context, callback) => {
     var params = {
         TableName : "Users",
         Item:{
-            "ID" : uuid(),
+            "id" : uuid(),
             "username": event.username,            
         }
     }
@@ -54,33 +54,33 @@ exports.createUser = async (event, context, callback) => {
     try {
         data = await client.put(params, (err, data) => {
             if (err) {
-                callback(err);
+                callback(err)
               }
-              callback(null, params.Item);
-        }).promise();
+              callback(null, params.Item)
+        }).promise()
     }
     catch (err) {        
-        return err;
+        return err
     }
-    return data;
+    return data
     
 }
 
-exports.getUser = async (event, context, callback) => {
+exports.getUser = async (event, context) => {
     var params = {
         TableName : "Users",
         Key : {
-            "ID" : event.id
+            "id" : event.id,            
         }
     }    
-    
+
     try {
-        data = await client.get(params).promise();
+        data = await client.get(params).promise()
     }
     catch (err) {        
-        return err;
+        return err
     }
-    return data;
+    return data
     
 }
 
@@ -88,7 +88,7 @@ exports.updateUser = async (event, context) => {
     var params = {
         TableName : "Users",
         Key : {
-            "ID" : event.id
+            "id" : event.id
         },
         UpdateExpression: "set username = :n",
         ExpressionAttributeValues:{
@@ -98,32 +98,33 @@ exports.updateUser = async (event, context) => {
     }        
     
     try {
-        data = await client.update(params).promise();
+        data = await client.update(params).promise()
     }
     catch (err) {        
-        return err;
+        return err
     }
-    return {data};
+    return { ...params.Key, ...data["Attributes"] }
 }
 
 exports.deleteUser = async (event, context) => {
     var params = {
         TableName : "Users",
         Key : {
-            "ID" : event.id
+            "id" : event.id
         },
         ReturnValues:"ALL_OLD"
     }    
 
     try {
-        data = await client.delete(params).promise();
+        data = await client.delete(params).promise()
     }
     catch (err) {        
-        return err;
+        return err
     }
-    return data;
+    return { ...params.Key, ...data["Attributes"] }
     
 }
 
 // echo '{"username" : "Dealin" }' | sam local invoke "CreateUserFunction"
-// echo '{"id" : "fbb64dd0-3a6f-40da-8930-1f26d029a9d5", "username" : "Dealin test" }' | sam local invoke "UpdateUserFunction"
+// echo '{"id" : "4a9e37c7-b253-4cac-b23c-6457b91a9bb9", "username" : "Dealin test" }' | sam local invoke "UpdateUserFunction"
+
